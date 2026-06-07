@@ -240,7 +240,7 @@
   // migration / safety
   state.cursor = state.cursor || 0;
   state.categories = (state.categories||[]).map(function(c){
-    return { id:c.id||uid(), name:c.name||"Untitled", optionIndex:c.optionIndex||0, options:(c.options&&c.options.length)?c.options:["Option"] };
+    return { id:c.id||uid(), name:c.name||"Untitled", optionIndex:c.optionIndex||0, options:Array.isArray(c.options)?c.options:[] };
   });
 
   var $ = function(id){ return document.getElementById(id); };
@@ -253,9 +253,12 @@
     var c = state.cursor % cats.length;
     for(var i=0;i<n;i++){
       var cat = cats[c % cats.length];
-      var opt = cat.options[cat.optionIndex % cat.options.length];
-      out.push({ dish: opt, category: cat.name, single: cat.options.length === 1 });
-      cat.optionIndex = (cat.optionIndex + 1) % cat.options.length; // advance within category
+      if(cat.options.length){
+        out.push({ dish: cat.options[cat.optionIndex % cat.options.length], category: cat.name, hasOpt: true });
+        cat.optionIndex = (cat.optionIndex + 1) % cat.options.length; // advance within category
+      } else {
+        out.push({ dish: "", category: cat.name, hasOpt: false });
+      }
       c++;
     }
     state.cursor = c % cats.length;
@@ -270,7 +273,7 @@
     var box = $("results");
     if(!items.length){ box.className=""; box.innerHTML=""; return; }
     var li = items.map(function(it,i){
-      var variant = it.single ? "" : '<span class="opt">'+esc(it.dish)+'</span>';
+      var variant = it.hasOpt ? '<span class="opt">'+esc(it.dish)+'</span>' : "";
       return '<li><span class="n">'+(i+1)+'</span><span class="body"><span class="meal">'+esc(it.category)+'</span>'+variant+'</span></li>';
     }).join("");
     box.innerHTML =
@@ -296,7 +299,7 @@
       var isNext = idx === nextIdx;
       var opts = cat.options.map(function(o,oi){
         var active = oi === (cat.optionIndex % cat.options.length);
-        var rm = cat.options.length>1 ? '<button data-act="rmopt" data-cat="'+cat.id+'" data-oi="'+oi+'" title="remove">&times;</button>' : '';
+        var rm = '<button data-act="rmopt" data-cat="'+cat.id+'" data-oi="'+oi+'" title="remove">&times;</button>';
         return '<span class="chip'+(active?' active':'')+'">'+esc(o)+rm+'</span>';
       }).join("");
       return ''+
@@ -328,7 +331,7 @@
   $("plus").addEventListener("click", function(){ $("count").value = Math.min(50,(parseInt($("count").value,10)||1)+1); });
 
   $("addCat").addEventListener("click", function(){
-    state.categories.push({ id:uid(), name:"New meal", optionIndex:0, options:["Option"] });
+    state.categories.push({ id:uid(), name:"New meal", optionIndex:0, options:[] });
     save(); renderCats(); renderProgress();
   });
 
