@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On Rotation — what's for dinner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EDE0;
+    --paper-2:#EFE6D5;
+    --ink:#2A2018;
+    --ink-soft:#5C4F40;
+    --tomato:#C4432F;
+    --tomato-dk:#9E331F;
+    --saffron:#E0922F;
+    --olive:#5B6236;
+    --line:#D8CCB6;
+    --card:#FBF7EF;
+    --shadow:rgba(42,32,24,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(224,146,47,.10), transparent 38%),
+      radial-gradient(circle at 88% 8%, rgba(196,67,47,.09), transparent 42%),
+      radial-gradient(circle at 70% 92%, rgba(91,98,54,.08), transparent 45%);
+    min-height:100%;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:34px 22px 90px}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:34px;animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+  .kicker{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--tomato);font-weight:700;margin-bottom:6px}
+  h1{
+    font-family:"Fraunces",serif;font-weight:900;font-size:clamp(2.6rem,8vw,4.4rem);
+    line-height:.92;letter-spacing:-.02em;color:var(--ink);
+  }
+  h1 em{font-style:italic;font-weight:500;color:var(--tomato)}
+  .sub{margin-top:12px;color:var(--ink-soft);max-width:46ch;font-size:1rem}
+
+  /* ---------- generator ---------- */
+  .generator{
+    background:var(--ink);color:var(--paper);border-radius:20px;padding:28px;
+    margin:30px 0;display:flex;flex-wrap:wrap;align-items:center;gap:20px;
+    box-shadow:0 18px 40px -22px var(--shadow);
+    position:relative;overflow:hidden;
+    animation:rise .7s .08s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .generator::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(224,146,47,.35),transparent 70%)}
+  .gen-label{font-family:"Fraunces",serif;font-size:1.5rem;font-weight:600;font-style:italic}
+  .stepper{display:flex;align-items:center;gap:0;background:rgba(244,237,224,.08);border:1px solid rgba(244,237,224,.22);border-radius:999px;padding:4px}
+  .stepper button{
+    width:42px;height:42px;border:none;border-radius:50%;background:transparent;color:var(--paper);
+    font-size:1.5rem;cursor:pointer;font-family:"Fraunces",serif;line-height:1;transition:background .15s,transform .1s;
+  }
+  .stepper button:hover{background:rgba(244,237,224,.14)}
+  .stepper button:active{transform:scale(.9)}
+  .stepper input{
+    width:54px;text-align:center;background:transparent;border:none;color:var(--paper);
+    font-family:"Fraunces",serif;font-size:1.8rem;font-weight:600;-moz-appearance:textfield;
+  }
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .stepper input:focus{outline:none}
+  .serve{
+    margin-left:auto;background:var(--tomato);color:#fff;border:none;border-radius:999px;
+    padding:15px 30px;font-family:"Hanken Grotesk";font-weight:700;font-size:1.02rem;cursor:pointer;
+    letter-spacing:.01em;transition:transform .12s,box-shadow .2s,background .2s;
+    box-shadow:0 8px 20px -8px rgba(196,67,47,.7);
+  }
+  .serve:hover{background:var(--tomato-dk);transform:translateY(-2px)}
+  .serve:active{transform:translateY(0)}
+
+  /* ---------- results / ticket ---------- */
+  #results{margin:8px 0 38px;display:none}
+  #results.show{display:block;animation:rise .5s ease both}
+  .ticket{
+    background:var(--card);border-radius:6px;padding:0 0 18px;
+    box-shadow:0 14px 36px -18px var(--shadow);
+    background-image:repeating-linear-gradient(var(--line) 0 1px,transparent 1px 34px);
+    background-position:0 64px;
+    position:relative;max-width:440px;margin:0 auto;
+    -webkit-mask:radial-gradient(7px at 7px 50%,transparent 98%,#000) -7px 0/100% 14px;
+  }
+  .ticket-top{
+    text-align:center;padding:20px 24px 14px;border-bottom:2px dashed var(--line);
+    margin-bottom:4px;
+  }
+  .ticket-top .stamp{font-family:"Fraunces",serif;font-style:italic;font-weight:900;font-size:1.7rem;color:var(--tomato);letter-spacing:.02em}
+  .ticket-top .meta{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
+  .ticket li{
+    list-style:none;display:flex;align-items:baseline;gap:12px;
+    padding:6px 26px;height:34px;
+  }
+  .ticket li .n{font-family:"Fraunces",serif;font-weight:900;color:var(--saffron);width:24px;flex:none}
+  .ticket li .dish{font-weight:600;font-size:1.08rem}
+  .ticket li .cat{font-size:.78rem;color:var(--ink-soft);margin-left:auto;font-style:italic;font-family:"Fraunces",serif}
+
+  /* ---------- section ---------- */
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 16px;flex-wrap:wrap}
+  .sec-head h2{font-family:"Fraunces",serif;font-weight:600;font-size:1.7rem}
+  .progress-pill{font-size:.78rem;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+  .progress-pill b{color:var(--tomato)}
+
+  .cat{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;
+    margin-bottom:12px;box-shadow:0 6px 18px -14px var(--shadow);transition:border-color .2s;
+  }
+  .cat.next{border-color:var(--tomato);box-shadow:0 0 0 2px rgba(196,67,47,.14),0 6px 18px -14px var(--shadow)}
+  .cat-row{display:flex;align-items:center;gap:8px}
+  .cat-row .next-tag{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:var(--tomato);padding:3px 7px;border-radius:6px;font-weight:700;flex:none}
+  .cat-name{
+    flex:1;font-family:"Fraunces",serif;font-weight:600;font-size:1.2rem;color:var(--ink);
+    background:transparent;border:none;border-bottom:2px solid transparent;padding:2px 0;min-width:0;
+  }
+  .cat-name:focus{outline:none;border-bottom-color:var(--saffron)}
+  .icon-btn{
+    width:32px;height:32px;flex:none;border:1px solid var(--line);background:var(--paper);border-radius:8px;
+    cursor:pointer;color:var(--ink-soft);font-size:1rem;display:grid;place-items:center;transition:all .15s;
+  }
+  .icon-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .icon-btn.danger:hover{background:var(--tomato);border-color:var(--tomato);color:#fff}
+  .icon-btn:disabled{opacity:.3;cursor:default}
+  .icon-btn:disabled:hover{background:var(--paper);color:var(--ink-soft);border-color:var(--line)}
+
+  .options{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:999px;padding:5px 6px 5px 13px;font-size:.9rem;font-weight:500;
+  }
+  .chip.active{background:var(--saffron);border-color:var(--saffron);color:#3a2a10}
+  .chip button{border:none;background:transparent;cursor:pointer;color:inherit;opacity:.55;font-size:1rem;line-height:1;padding:0 2px}
+  .chip button:hover{opacity:1}
+  .add-opt{display:inline-flex;border:1px dashed var(--line);border-radius:999px;overflow:hidden}
+  .add-opt input{border:none;background:transparent;padding:5px 12px;font:inherit;font-size:.9rem;width:120px}
+  .add-opt input:focus{outline:none}
+  .add-opt button{border:none;background:var(--olive);color:#fff;padding:0 12px;cursor:pointer;font-size:1.1rem}
+
+  .add-cat{
+    width:100%;border:2px dashed var(--line);background:transparent;border-radius:14px;padding:16px;
+    cursor:pointer;font:inherit;font-weight:600;color:var(--ink-soft);margin-top:4px;transition:all .2s;
+  }
+  .add-cat:hover{border-color:var(--tomato);color:var(--tomato);background:rgba(196,67,47,.04)}
+
+  .footer-actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+  .ghost{
+    background:transparent;border:1px solid var(--line);border-radius:10px;padding:11px 18px;
+    cursor:pointer;font:inherit;font-weight:600;color:var(--ink-soft);transition:all .18s;
+  }
+  .ghost:hover{border-color:var(--ink);color:var(--ink)}
+  .ghost.warn:hover{border-color:var(--tomato);color:var(--tomato)}
+
+  .empty{text-align:center;color:var(--ink-soft);padding:30px;font-style:italic;font-family:"Fraunces",serif}
+
+  footer{margin-top:54px;text-align:center;color:var(--ink-soft);font-size:.8rem}
+
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @media(max-width:560px){
+    .generator{flex-direction:column;align-items:stretch}
+    .serve{margin-left:0;width:100%}
+    .gen-row{display:flex;align-items:center;gap:16px;justify-content:space-between}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">David's Kitchen</div>
+    <h1>On <em>Rotation</em></h1>
+    <p class="sub">Tell it how many meals you need. It serves up the next ones in line, cycling fairly through everything before it repeats.</p>
+  </header>
+
+  <div class="generator">
+    <div class="gen-row" style="display:flex;align-items:center;gap:18px">
+      <span class="gen-label">I want</span>
+      <div class="stepper">
+        <button id="minus" aria-label="fewer">–</button>
+        <input id="count" type="number" min="1" max="50" value="3">
+        <button id="plus" aria-label="more">+</button>
+      </div>
+      <span class="gen-label">meals</span>
+    </div>
+    <button class="serve" id="serve">Serve it up →</button>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="sec-head">
+    <h2>The Rotation</h2>
+    <span class="progress-pill" id="progress"></span>
+  </div>
+  <div id="catlist"></div>
+  <button class="add-cat" id="addCat">+ Add a meal or category</button>
+
+  <div class="footer-actions">
+    <button class="ghost warn" id="reset">↺ Reset progress to start</button>
+  </div>
+
+  <footer>Lives in your browser — edit anytime, no deploy needed. Made for davidmcdougald.com</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "on-rotation-v1";
+
+  // ---- defensive storage (works deployed; degrades quietly elsewhere) ----
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function load(){ try{ var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+
+  var uid = function(){ return Math.random().toString(36).slice(2,9); };
+
+  var seed = {
+    cursor: 0,
+    categories: [
+      { id: uid(), name: "Pasta night", optionIndex: 0, options: ["Carbonara","Bolognese","Pesto"] },
+      { id: uid(), name: "Taco Tuesday", optionIndex: 0, options: ["Beef tacos","Fish tacos"] },
+      { id: uid(), name: "Roast chicken", optionIndex: 0, options: ["Roast chicken"] },
+      { id: uid(), name: "Stir fry", optionIndex: 0, options: ["Chicken & broccoli","Tofu & pepper"] },
+      { id: uid(), name: "Burger & fries", optionIndex: 0, options: ["Burger & fries"] }
+    ]
+  };
+
+  var state = load() || seed;
+  // migration / safety
+  state.cursor = state.cursor || 0;
+  state.categories = (state.categories||[]).map(function(c){
+    return { id:c.id||uid(), name:c.name||"Untitled", optionIndex:c.optionIndex||0, options:(c.options&&c.options.length)?c.options:["Option"] };
+  });
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- core rotation logic ----------
+  function serve(n){
+    var cats = state.categories;
+    if(!cats.length) return [];
+    var out = [];
+    var c = state.cursor % cats.length;
+    for(var i=0;i<n;i++){
+      var cat = cats[c % cats.length];
+      var opt = cat.options[cat.optionIndex % cat.options.length];
+      out.push({ dish: opt, category: cat.name, single: cat.options.length === 1 });
+      cat.optionIndex = (cat.optionIndex + 1) % cat.options.length; // advance within category
+      c++;
+    }
+    state.cursor = c % cats.length;
+    save();
+    renderCats();        // option highlights & "next" marker move
+    renderProgress();
+    return out;
+  }
+
+  // ---------- renderers ----------
+  function renderResults(items){
+    var box = $("results");
+    if(!items.length){ box.className=""; box.innerHTML=""; return; }
+    var li = items.map(function(it,i){
+      return '<li><span class="n">'+(i+1)+'</span><span class="dish">'+esc(it.dish)+'</span>'+
+             (it.single?'':'<span class="cat">'+esc(it.category)+'</span>')+'</li>';
+    }).join("");
+    box.innerHTML =
+      '<div class="ticket"><div class="ticket-top"><div class="stamp">Order up!</div>'+
+      '<div class="meta">'+items.length+' meal'+(items.length>1?'s':'')+' &middot; next in line</div></div>'+
+      '<ul>'+li+'</ul></div>';
+    box.className="show";
+  }
+
+  function renderProgress(){
+    var cats = state.categories;
+    if(!cats.length){ $("progress").innerHTML="empty"; return; }
+    var pos = (state.cursor % cats.length) + 1;
+    $("progress").innerHTML = 'next up: <b>'+esc(cats[state.cursor % cats.length].name)+'</b> &middot; '+pos+' of '+cats.length;
+  }
+
+  function renderCats(){
+    var cats = state.categories;
+    var host = $("catlist");
+    if(!cats.length){ host.innerHTML='<div class="empty">No meals yet — add one below to start your rotation.</div>'; return; }
+    var nextIdx = state.cursor % cats.length;
+    host.innerHTML = cats.map(function(cat,idx){
+      var isNext = idx === nextIdx;
+      var opts = cat.options.map(function(o,oi){
+        var active = oi === (cat.optionIndex % cat.options.length);
+        var rm = cat.options.length>1 ? '<button data-act="rmopt" data-cat="'+cat.id+'" data-oi="'+oi+'" title="remove">&times;</button>' : '';
+        return '<span class="chip'+(active?' active':'')+'">'+esc(o)+rm+'</span>';
+      }).join("");
+      return ''+
+      '<div class="cat'+(isNext?' next':'')+'">'+
+        '<div class="cat-row">'+
+          (isNext?'<span class="next-tag">next</span>':'')+
+          '<input class="cat-name" data-act="rename" data-cat="'+cat.id+'" value="'+esc(cat.name)+'">'+
+          '<button class="icon-btn" data-act="up" data-cat="'+cat.id+'" '+(idx===0?'disabled':'')+' title="move up">↑</button>'+
+          '<button class="icon-btn" data-act="down" data-cat="'+cat.id+'" '+(idx===cats.length-1?'disabled':'')+' title="move down">↓</button>'+
+          '<button class="icon-btn danger" data-act="delcat" data-cat="'+cat.id+'" title="delete">🗑</button>'+
+        '</div>'+
+        '<div class="options">'+opts+
+          '<span class="add-opt"><input placeholder="add option" data-cat="'+cat.id+'" data-act="optinput"><button data-act="addopt" data-cat="'+cat.id+'">+</button></span>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];}); }
+  function find(id){ return state.categories.filter(function(c){return c.id===id;})[0]; }
+
+  // ---------- events ----------
+  $("serve").addEventListener("click", function(){
+    var n = Math.max(1, Math.min(50, parseInt($("count").value,10)||1));
+    $("count").value = n;
+    renderResults(serve(n));
+  });
+  $("minus").addEventListener("click", function(){ $("count").value = Math.max(1,(parseInt($("count").value,10)||1)-1); });
+  $("plus").addEventListener("click", function(){ $("count").value = Math.min(50,(parseInt($("count").value,10)||1)+1); });
+
+  $("addCat").addEventListener("click", function(){
+    state.categories.push({ id:uid(), name:"New meal", optionIndex:0, options:["Option"] });
+    save(); renderCats(); renderProgress();
+  });
+
+  $("reset").addEventListener("click", function(){
+    state.cursor = 0;
+    state.categories.forEach(function(c){ c.optionIndex = 0; });
+    save(); renderCats(); renderProgress();
+    $("results").className=""; $("results").innerHTML="";
+  });
+
+  // delegated handlers for the dynamic list
+  $("catlist").addEventListener("click", function(e){
+    var b = e.target.closest("[data-act]"); if(!b) return;
+    var act = b.getAttribute("data-act");
+    var cat = find(b.getAttribute("data-cat"));
+    if(act==="up"||act==="down"){
+      var i = state.categories.indexOf(cat), j = act==="up"? i-1 : i+1;
+      if(j<0||j>=state.categories.length) return;
+      state.categories.splice(i,1); state.categories.splice(j,0,cat);
+    } else if(act==="delcat"){
+      if(state.categories.length<=1 || confirm("Delete \""+cat.name+"\"?")){
+        state.categories = state.categories.filter(function(c){return c!==cat;});
+        if(state.cursor>=state.categories.length) state.cursor=0;
+      } else return;
+    } else if(act==="rmopt"){
+      var oi = parseInt(b.getAttribute("data-oi"),10);
+      cat.options.splice(oi,1);
+      if(cat.optionIndex>=cat.options.length) cat.optionIndex=0;
+    } else if(act==="addopt"){
+      var inp = b.parentElement.querySelector('[data-act="optinput"]');
+      var v=(inp.value||"").trim(); if(!v) return;
+      cat.options.push(v); inp.value="";
+    } else return;
+    save(); renderCats(); renderProgress();
+  });
+
+  $("catlist").addEventListener("keydown", function(e){
+    if(e.key!=="Enter") return;
+    var t=e.target;
+    if(t.getAttribute && t.getAttribute("data-act")==="optinput"){
+      var cat=find(t.getAttribute("data-cat")); var v=(t.value||"").trim();
+      if(v){ cat.options.push(v); t.value=""; save(); renderCats(); renderProgress(); }
+    }
+  });
+
+  $("catlist").addEventListener("change", function(e){
+    var t=e.target;
+    if(t.getAttribute && t.getAttribute("data-act")==="rename"){
+      var cat=find(t.getAttribute("data-cat"));
+      cat.name=(t.value||"").trim()||"Untitled";
+      save(); renderProgress();
+      if(cat===state.categories[state.cursor%state.categories.length]) renderCats();
+    }
+  });
+
+  // ---------- boot ----------
+  renderCats();
+  renderProgress();
+})();
+</script>
+</body>
+</html>
